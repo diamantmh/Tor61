@@ -26,21 +26,20 @@ public class Startup {
         rand = new Random();
         RegistrationAgent agent = null;
 //        try {
-            Thread listen = new ListenThread(LISTEN_PORT);
-            listen.start();
+//            Thread listen = new ListenThread(LISTEN_PORT);
+//            listen.start();
 //            agent = new RegistrationAgent(REG_HOST, REG_PORT);
 //            String groupName = "Tor61Router-"+GROUP_NUM+"-"+INSTANCE_NUM;
 //            agent.register(LISTEN_PORT, data, groupName);
 //            FetchResult[] viableRouters = agent.fetch(FETCH_PREFIX);
-
-
 //        } catch (IOException e) {
 //            e.printStackTrace();
 //        }
+        HTTPProxy p = new HTTPProxy(33333);
+        p.run();
         List<FetchResult> viableRouters = new ArrayList<>(1);
         viableRouters.add(new FetchResult("127.0.0.1", LISTEN_PORT, data));
-        createCircuit(viableRouters);
-
+        //createCircuit(viableRouters);
     }
 
     private static void createCircuit(List<FetchResult> viableRouters) {
@@ -48,7 +47,7 @@ public class Startup {
         while(count > 0) {
             int n = rand.nextInt(viableRouters.size());
             String body = viableRouters.get(n).getIp() + ":" + viableRouters.get(n).getIp() + "\0" + viableRouters.get(n).getData();
-            manager.extend(-1, -1, viableRouters.get(n).getData(), body);
+            manager.extend(-1, -1, body);
             try {
                 String result = manager.getCommandQ().take();
                 if(result.equals("created") || result.equals("extended")) {
@@ -64,6 +63,7 @@ public class Startup {
 
     public class NewCircuit extends Thread {
 
+        
         public NewCircuit() {
 
         }

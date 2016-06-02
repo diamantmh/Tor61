@@ -1,11 +1,12 @@
 /**
  * Created by michaeldiamant on 6/1/16.
  */
+import jnr.constants.platform.Sock;
+
 import java.io.*;
 import java.net.*;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
+import java.nio.ByteBuffer;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -19,12 +20,18 @@ public class HTTPProxy {
 
     Map<Integer, BlockingQueue<char[]>> buffers;
     private final Lock l = new ReentrantLock();
+    private final Lock lockID = new ReentrantLock();
     private int connectionID = 0;
     private ServerSocket serverSocket;
+    private static SocketManager manager;
+    private int streamID;
+    private SocketBuffers buffer;
 
     public HTTPProxy(int port) {
         buffers = new HashMap<>();
-
+        manager = SocketManager.getInstance(0);
+        streamID = 0;
+        buffer = SocketBuffers.getInstance();
         try {
             serverSocket = new ServerSocket(port);
         } catch (IOException e) {
@@ -213,6 +220,7 @@ public class HTTPProxy {
                     while ((packet = buffer.take()) != null) {
 //                        System.out.println("out: " + packet.length());
 //                        try {
+
                         out.print(packet);
                         out.flush();
 //                        } catch (IOException e) {
@@ -258,6 +266,17 @@ public class HTTPProxy {
             System.out.println(4);
             if (request.trim().length() > 0) {
                 INetAddress address = getAddressFromMessage(request);
+                try {
+                    int currentStream =  getStreamNumber();
+                    buffer.create(currentStream);
+                    manager.getCommandQ().put("begin " + address.getHost() + " " +  address.getPort() + " " + currentStream);
+                    List<byte[]> b = pack(request);
+                    for(int i = 0; i < b.size(); i++) {
+                        buffer.put(currentStream, b.get(i));
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 System.out.println(5);
 
                 PrintWriter hostOut = null;
@@ -329,6 +348,30 @@ public class HTTPProxy {
 //                System.out.println(9);
             }
         }
+    }
+
+    private int getStreamNumber() {
+        lockID.lock();
+        try {
+            streamID += 1;
+        } finally {
+            int temp = streamID;
+            lockID.unlock();
+            return temp;
+        }
+    }
+
+    private List<byte[]> pack(String request) {
+        List<byte[]> result = new ArrayList<>();
+        ByteBuffer b = ByteBuffer.allocate(498);
+        for(int i = 0; i < request.length(); i++) {
+            if(i % 498 == 0 && i != 0) {
+                result.add(b.array());
+                b = ByteBuffer.allocate(498);
+            }
+            b.putChar(request.charAt(i));
+        }
+        return result;
     }
 
 

@@ -1,4 +1,8 @@
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -33,15 +37,39 @@ public class Startup {
 //        } catch (IOException e) {
 //            e.printStackTrace();
 //        }
-        FetchResult[] viableRouters = new FetchResult[1];
-        viableRouters[0] = new FetchResult("127.0.0.1", LISTEN_PORT, data);
+        List<FetchResult> viableRouters = new ArrayList<>(1);
+        viableRouters.add(new FetchResult("127.0.0.1", LISTEN_PORT, data));
         createCircuit(viableRouters);
 
     }
 
-    private static void createCircuit(FetchResult[] viableRouters) {
-        int n = rand.nextInt(viableRouters.length);
-        String body = viableRouters[n].getIp() + ":" + viableRouters[n] + "\0" + viableRouters[n].getData();
-        manager.extend(-1, -1, viableRouters[n].getData(), body);
+    private static void createCircuit(List<FetchResult> viableRouters) {
+        int count = 3;
+        while(count > 0) {
+            int n = rand.nextInt(viableRouters.size());
+            String body = viableRouters.get(n).getIp() + ":" + viableRouters.get(n).getIp() + "\0" + viableRouters.get(n).getData();
+            manager.extend(-1, -1, viableRouters.get(n).getData(), body);
+            try {
+                String result = manager.getCommandQ().take();
+                if(result.equals("created") || result.equals("extended")) {
+                    count--;
+                } else {
+                    viableRouters.remove(n);
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public class NewCircuit extends Thread {
+
+        public NewCircuit() {
+
+        }
+
+        public void run() {
+
+        }
     }
 }

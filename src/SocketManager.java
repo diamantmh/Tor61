@@ -2,6 +2,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Created by josephkesting on 5/31/16.
@@ -11,9 +13,13 @@ public class SocketManager {
     private SocketList socketList;
     private RoutingTable routingTable;
     private int myID;
+    private BlockingQueue<String> commandQ;
 
     private SocketManager(int myID) {
         this.myID = myID;
+        socketList = new SocketList();
+        routingTable = new RoutingTable();
+        commandQ = new LinkedBlockingQueue<>();
     }
 
     public static SocketManager getInstance(int myID) {
@@ -21,6 +27,10 @@ public class SocketManager {
             instance = new SocketManager(myID);
         }
         return instance;
+    }
+
+    public BlockingQueue<String> getCommandQ() {
+        return commandQ;
     }
 
     public SocketList getSocketList() {
@@ -56,6 +66,7 @@ public class SocketManager {
                 create(extenderID, circuitNum, extendTargetID);
             } else {
                 Thread open = new OpenThread("", 0, extendTargetID, extenderID, circuitNum);
+                open.start();
             }
         } else {
             DataOutputStream s = socketList.get(extenderID).getOut();
@@ -71,19 +82,25 @@ public class SocketManager {
     public void create(int extenderID, int extenderCircuitID, int extendTargetID) {
         SocketData outData = socketList.get(extendTargetID);
         int newCircuitID = routingTable.stage(extendTargetID, extenderCircuitID, extenderID, outData.isOwned());
-        byte[] outMessage = new byte[512];
         //Send create Message to appropriate socket
+        CircuitObject c = new CircuitObject(newCircuitID, 1);
+        try {
+            outData.getOut().write(c.getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public boolean created(int extendTargetID, int extendedCircuitID) {
         Pair outSocketInfo = routingTable.unstage(extendTargetID, extendedCircuitID);
         SocketData data = socketList.get(outSocketInfo.getSocket());
-        byte[] createMessage = new byte[512];//TODO send EXTENDED message to appropriate socket
-//        try {
-//            data.getBuffer().put(createMessage);
-//        } catch (InterruptedException e) {
-//            return false;
-//        }
+        RelayObject r = new RelayObject(extendedCircuitID, 0, 0, 7);
+        //TODO send EXTENDED message to appropriate socket
+        try {
+            data.getOut().write(r.getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return true;
     }
 

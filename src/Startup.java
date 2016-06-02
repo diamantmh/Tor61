@@ -1,5 +1,3 @@
-import RegistrationAgent.FetchResult;
-
 import java.io.IOException;
 
 /**
@@ -26,14 +24,17 @@ public class Startup {
             String groupName = "Tor61Router-"+GROUP_NUM+"-"+INSTANCE_NUM;
             agent.register(LISTEN_PORT, data, groupName);
             FetchResult[] viableRouters = agent.fetch(FETCH_PREFIX);
-
+            createCircuit(viableRouters);
 
         } catch (IOException e) {
             e.printStackTrace();
         }
+
     }
 
-    private void createCircuit(FetchResult[] viableRouters) {
-
+    private static void createCircuit(FetchResult[] viableRouters) {
+        for(int i = 0; i < viableRouters.length; i++) {
+            System.out.println("" + viableRouters[i].getIp() + " " + viableRouters[i].getData() + " " + viableRouters[i].getData());
+        }
     }
 }

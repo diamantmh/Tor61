@@ -47,7 +47,7 @@ public class Startup {
         while(count > 0) {
             int n = rand.nextInt(viableRouters.size());
             String body = viableRouters.get(n).getIp() + ":" + viableRouters.get(n).getIp() + "\0" + viableRouters.get(n).getData();
-            manager.extend(-1, -1, viableRouters.get(n).getData(), body);
+            manager.extend(-1, -1, body);
             try {
                 String result = manager.getCommandQ().take();
                 if(result.equals("created") || result.equals("extended")) {

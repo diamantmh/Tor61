@@ -41,6 +41,7 @@ public class SocketReadThread extends Thread {
         CircuitObject circuitMessage;
         OpenObject openMessage;
 
+
         Pair outPair = socketManager.getRoutingTable().get(new Pair(inCircuitID, inID));
 
         switch(type) {

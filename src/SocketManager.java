@@ -1,6 +1,9 @@
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Created by josephkesting on 5/31/16.
@@ -10,9 +13,13 @@ public class SocketManager {
     private SocketList socketList;
     private RoutingTable routingTable;
     private int myID;
+    private BlockingQueue<String> commandQ;
 
     private SocketManager(int myID) {
         this.myID = myID;
+        socketList = new SocketList();
+        routingTable = new RoutingTable();
+        commandQ = new LinkedBlockingQueue<>();
     }
 
     public static SocketManager getInstance(int myID) {
@@ -20,6 +27,10 @@ public class SocketManager {
             instance = new SocketManager(myID);
         }
         return instance;
+    }
+
+    public BlockingQueue<String> getCommandQ() {
+        return commandQ;
     }
 
     public SocketList getSocketList() {
@@ -48,18 +59,18 @@ public class SocketManager {
         //Add listener
     }
 
-    public boolean extend(int extenderID, int circuitNum, String body) {
+
+    public void extend(int extenderID, int circuitNum, String body) {
         ExtendTarget target = new ExtendTarget(body);
 
         if (socketList.contains(extenderID)) {
             create(extenderID, circuitNum, target.id);
         } else {
             Thread open = new OpenThread(target.host, target.port, target.id, extenderID, circuitNum);
-//            if (data != null) {
-//                create(extenderID, circuitNum, extendTargetID);
-//            }
+            open.start();
+
+
         }
-        return true;
     }
 
     public void createReceived(int inSocketID, int circuitID) {
@@ -77,19 +88,25 @@ public class SocketManager {
     public void create(int extenderID, int extenderCircuitID, int extendTargetID) {
         SocketData outData = socketList.get(extendTargetID);
         int newCircuitID = routingTable.stage(extendTargetID, extenderCircuitID, extenderID, outData.isOwned());
-        byte[] outMessage = new byte[512];
         //Send create Message to appropriate socket
+        CircuitObject c = new CircuitObject(newCircuitID, 1);
+        try {
+            outData.getBuffer().put(c.getBytes());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public boolean created(int extendTargetID, int extendedCircuitID) {
         Pair outSocketInfo = routingTable.unstage(extendTargetID, extendedCircuitID);
         SocketData data = socketList.get(outSocketInfo.getSocket());
-        byte[] createMessage = new byte[512];//TODO send EXTENDED message to appropriate socket
-//        try {
-//            data.getBuffer().put(createMessage);
-//        } catch (InterruptedException e) {
-//            return false;
-//        }
+        RelayObject r = new RelayObject(extendedCircuitID, 0, 0, 7);
+        //TODO send EXTENDED message to appropriate socket
+        try {
+            data.getBuffer().put(r.getBytes());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return true;
     }
 
@@ -131,11 +148,11 @@ public class SocketManager {
                 socket.bind(new InetSocketAddress(0));
                 socket.connect(new InetSocketAddress(host, port));
                 data = new SocketData(socket, true, targetSocketID);
-                byte[] openMessage = new byte[10]; //REPLACE W/ MICHA's method
-                data.getOut().write(openMessage);
+                OpenObject open = new OpenObject(myID, targetSocketID, 5);
+                data.getBuffer().put(open.getBytes());
                 byte[] response = new byte[512];
                 data.getIn().read(response);
-                //Parse response
+                //TODO Parse response
                 boolean success = true; //
                 if (success) {
                     socketList.addSocket(data, targetSocketID);
@@ -146,6 +163,8 @@ public class SocketManager {
                 }
             } catch (IOException e) {
                 //socket.close();
+                e.printStackTrace();
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }

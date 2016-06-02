@@ -39,6 +39,10 @@ public class CircuitObject implements MessageObject {
         return messageType;
     }
 
+    public void setCircuitID(int circuitID) {
+        this.circuitID = circuitID;
+    }
+
     public byte[] getBytes() {
         ByteBuffer b = ByteBuffer.allocate(512);
         b.putShort((short) circuitID);

@@ -18,7 +18,11 @@ public class RoutingTable {
     }
 
     public void addExit(Pair inPair) {
-        mappings.put(inPair, new Pair(-1, -1));
+        mappings.put(inPair, new Pair(0, -1));
+    }
+
+    public void addEntry(Pair outPair) {
+        add(outPair, new Pair(-1, 0));
     }
 
     public void add(Pair inPair, Pair outPair) {

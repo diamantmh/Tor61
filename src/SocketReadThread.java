@@ -20,43 +20,154 @@ public class SocketReadThread extends Thread {
         try {
             int bytesRead = inputStream.read(messageIn);
             while (bytesRead > 0) {
-                processMessage(messageIn);
+                try {
+                    processMessage(messageIn);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 bytesRead = inputStream.read(messageIn);
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
-    private void processMessage(byte[] messageBytes) {
-        int inID = 0;
-        int inCircuitID = 0;
-        int outID = 0;
-        int outCircuitID = 0;
-        //Create
-        socketManager.create(inID, inCircuitID, outID);
-        //Created - silent
-        socketManager.create(inID, inCircuitID, outID);
-        //Create Failed
+    private void processMessage(byte[] messageBytes) throws InterruptedException {
+        int inID = data.getAgentID();
+        MessageObject message = Decoder.decode(messageBytes);
+        int inCircuitID = message.getCircuitID();
+        MessageType type = message.getMessageType();
+        RelayObject relayMessage;
+        CircuitObject circuitMessage;
+        OpenObject openMessage;
 
-        //Destroy
-        socketManager.destroy(inCircuitID, inID);
-        //Begin
+        Pair outPair = socketManager.getRoutingTable().get(new Pair(inCircuitID, inID));
 
-        //Data
+        switch(type) {
+            case BEGIN: {
+                relayMessage = (RelayObject) message;
+                String body = relayMessage.getBody();
+                String[] splitBody = body.split(":");
+                String host = splitBody[0];
+                int port = Integer.parseInt(splitBody[1]);
+                if (outPair.isExit()) {
+                    //TODO:SEND to proxy
+                    //send back appropriate message
+                    //^Create new thread
+                } else {
+                    relayMessage.setCircuitID(outPair.getCircuit());
+                    socketManager.getSocketList().get(outPair.getSocket()).getBuffer().put(relayMessage.getBytes());
+                }
+                break;
+            } case BEGIN_FAILED: {
+                relayMessage = (RelayObject) message;
+                if (outPair.isEntry()) {
+                    //TODO send to command
+                } else {
+                    relayMessage.setCircuitID(outPair.getCircuit());
+                    socketManager.getSocketList().get(outPair.getSocket()).getBuffer().put(relayMessage.getBytes());
+                }
+                break;
+            } case CONNECTED: {
+                relayMessage = (RelayObject) message;
+                if (outPair.isEntry()) {
+                    //TODO send to command
+                } else {
+                    relayMessage.setCircuitID(outPair.getCircuit());
+                    socketManager.getSocketList().get(outPair.getSocket()).getBuffer().put(relayMessage.getBytes());
+                }
+                break;
+            } case CREATE: {
+                circuitMessage = (CircuitObject) message;
+                socketManager.createReceived(inID, inCircuitID);
+                break;
+            } case CREATED: {
+                circuitMessage = (CircuitObject) message;
+                socketManager.created(inID, inCircuitID);
+                break;
+            } case CREATE_FAILED: {
+                circuitMessage = (CircuitObject) message;
+                if (outPair.isEntry()) {
+                    //TODO send to command
+                } else {
+                    RelayObject extendFailed = new RelayObject(outPair.getCircuit(), 0, 0, 11);
+                    socketManager.getSocketList().get(outPair.getSocket()).getBuffer().put(extendFailed.getBytes());
+                }
+                break;
+            } case OPEN: {
+                openMessage = (OpenObject) message;
+                OpenObject opened = new OpenObject(openMessage.getOpenerID(), openMessage.getOpenedID(), 6);
+                socketManager.getSocketList().get(outPair.getSocket()).getBuffer().put(opened.getBytes());
+                break;
+            } case OPENED: {
+                openMessage = (OpenObject) message;
+                //SHOULD NEVER HAPPEN
+                break;
+            } case OPEN_FAILED: {
+                openMessage = (OpenObject) message;
+                //SHOULD NEVER HAPPEN
+                break;
+            } case EXTEND: {
+                relayMessage = (RelayObject) message;
+                if (outPair.isExit()) {
+                    socketManager.extend(inID, inCircuitID, relayMessage.getBody());
+                } else {
+                    relayMessage.setCircuitID(outPair.getCircuit());
+                    socketManager.getSocketList().get(outPair.getSocket()).getBuffer().put(relayMessage.getBytes());
+                }
+                break;
+            } case EXTENDED: {
+                relayMessage = (RelayObject) message;
+                if (outPair.isEntry()) {
+                    //TODO send to command
+                } else {
+                    relayMessage.setCircuitID(outPair.getCircuit());
+                    socketManager.getSocketList().get(outPair.getSocket()).getBuffer().put(relayMessage.getBytes());
+                }
+                break;
+            } case EXTEND_FAILED: {
+                relayMessage = (RelayObject) message;
+                if (outPair.isEntry()) {
+                    //TODO send to command
+                } else {
+                    relayMessage.setCircuitID(outPair.getCircuit());
+                    socketManager.getSocketList().get(outPair.getSocket()).getBuffer().put(relayMessage.getBytes());
+                }
+                break;
+            } case DATA: {
+                relayMessage = (RelayObject) message;
+                if (outPair.isExit()) {
+                    //Send to proxy
+                } else if (outPair.isEntry()) {
+                    //Send to proxy
+                } else {
+                    relayMessage.setCircuitID(outPair.getCircuit());
+                    socketManager.getSocketList().get(outPair.getSocket()).getBuffer().put(relayMessage.getBytes());
+                }
+                break;
+            } case END: {
+                relayMessage = (RelayObject) message;
+                if (outPair.isExit()) {
+                    //Send to proxy, tear down stream buffer
+                } else if (outPair.isEntry()) {
+                    //Send to proxy tear down stream buffer
+                } else {
+                    relayMessage.setCircuitID(outPair.getCircuit());
+                    socketManager.getSocketList().get(outPair.getSocket()).getBuffer().put(relayMessage.getBytes());
+                }
+                break;
+            } case DESTROY: {
+                circuitMessage = (CircuitObject) message;
+                if (!outPair.isExit() && !outPair.isEntry()) {
+                    circuitMessage.setCircuitID(outPair.getCircuit());
+                    socketManager.getSocketList().get(outPair.getSocket()).getBuffer().put(circuitMessage.getBytes());
+                }
+                socketManager.destroy(inCircuitID, inID);
 
-        //End
-
-        //Connected
-
-        //Extend
-
-        //Extended - relay back
-
-        //Begin Failed
-
-        //Extend Failed
+                break;
+            }
+        }
+        
         
     }
 }

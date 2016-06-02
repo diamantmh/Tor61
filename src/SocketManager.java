@@ -45,18 +45,33 @@ public class SocketManager {
             e.printStackTrace();
         }
         return socketList.get(agentID);
+        //Add listener
     }
 
-    public boolean extend(int extenderID, int circuitNum, int extendTargetID) {
+    public boolean extend(int extenderID, int circuitNum, String body) {
+        ExtendTarget target = new ExtendTarget(body);
+
         if (socketList.contains(extenderID)) {
-            create(extenderID, circuitNum, extendTargetID);
+            create(extenderID, circuitNum, target.id);
         } else {
-            Thread open = new OpenThread("", 0, extendTargetID, extenderID, circuitNum);
+            Thread open = new OpenThread(target.host, target.port, target.id, extenderID, circuitNum);
 //            if (data != null) {
 //                create(extenderID, circuitNum, extendTargetID);
 //            }
         }
         return true;
+    }
+
+    public void createReceived(int inSocketID, int circuitID) {
+        routingTable.addExit(new Pair(circuitID, inSocketID));
+        CircuitObject created = new CircuitObject(circuitID, 2);
+        try {
+            socketList.get(inSocketID).getBuffer().put(created.getBytes());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            //TODO: HANDLE ERROR?
+        }
+
     }
 
     public void create(int extenderID, int extenderCircuitID, int extendTargetID) {
@@ -76,6 +91,21 @@ public class SocketManager {
 //            return false;
 //        }
         return true;
+    }
+
+    public class ExtendTarget {
+
+        public String host;
+        public int port;
+        public int id;
+
+        public ExtendTarget(String body) {
+            String[] split = body.split("\0");
+            String[] hostPort = split[0].split(":");
+            host = hostPort[0];
+            port = Integer.parseInt(hostPort[1]);
+            id = Integer.parseInt(split[1]);
+        }
     }
 
     public class OpenThread extends Thread {

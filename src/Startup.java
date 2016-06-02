@@ -26,21 +26,20 @@ public class Startup {
         rand = new Random();
         RegistrationAgent agent = null;
 //        try {
-            Thread listen = new ListenThread(LISTEN_PORT);
-            listen.start();
+//            Thread listen = new ListenThread(LISTEN_PORT);
+//            listen.start();
 //            agent = new RegistrationAgent(REG_HOST, REG_PORT);
 //            String groupName = "Tor61Router-"+GROUP_NUM+"-"+INSTANCE_NUM;
 //            agent.register(LISTEN_PORT, data, groupName);
 //            FetchResult[] viableRouters = agent.fetch(FETCH_PREFIX);
-
-
 //        } catch (IOException e) {
 //            e.printStackTrace();
 //        }
+        HTTPProxy p = new HTTPProxy(33333);
+        p.run();
         List<FetchResult> viableRouters = new ArrayList<>(1);
         viableRouters.add(new FetchResult("127.0.0.1", LISTEN_PORT, data));
-        createCircuit(viableRouters);
-
+        //createCircuit(viableRouters);
     }
 
     private static void createCircuit(List<FetchResult> viableRouters) {

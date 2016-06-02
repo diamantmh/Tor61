@@ -13,7 +13,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class SocketBuffers {
     private static SocketBuffers instance = null;
-    private static Map<Integer, BlockingQueue<String>> buffers = null;
+    private static Map<Integer, BlockingQueue<byte[]>> buffers = null;
     private static final Lock l = new ReentrantLock();
     private static int connectionID;
 
@@ -28,14 +28,12 @@ public class SocketBuffers {
         return instance;
     }
 
-    public static int create() {
-        int bufferID = getConnectionID();
-        buffers.put(bufferID, new LinkedBlockingQueue<>());
-        return bufferID;
+    public void create(int ID) {
+        buffers.put(ID, new LinkedBlockingQueue<>());
     }
 
-    public static String take(int id) {
-        String retVal = null;
+    public byte[] take(int id) {
+        byte[] retVal = null;
         try {
             retVal = buffers.get(id).take();
         } catch (InterruptedException e) {
@@ -44,7 +42,7 @@ public class SocketBuffers {
         return retVal;
     }
 
-    public static void put(int id, String payload) {
+    public void put(int id, byte[] payload) {
         try {
             buffers.get(id).put(payload);
         } catch (InterruptedException e) {
@@ -52,19 +50,7 @@ public class SocketBuffers {
         }
     }
 
-    public static void close(int id) {
+    public void close(int id) {
         buffers.remove(id);
-    }
-
-    private static int getConnectionID() {
-        l.lock();
-        int id = 0;
-        try {
-            connectionID++;
-            id = connectionID;
-        } finally {
-            l.unlock();
-            return id;
-        }
     }
 }

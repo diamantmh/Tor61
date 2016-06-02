@@ -11,7 +11,7 @@ public class RegistrationAgent {
 
     public static void main(String[] args) {
         try {
-            RegistrationAgent reg = new RegistrationAgent("\"cse461.cs.washington.edu\"", 46101);
+            RegistrationAgent reg = new RegistrationAgent("cse461.cs.washington.edu", 46101);
             System.out.println(reg.probe());
             reg.register(1234, 14000, "hermanos");
             System.out.println(reg.fetch("")[0].getData());
@@ -29,6 +29,7 @@ public class RegistrationAgent {
     PyObject agent;
 
     public RegistrationAgent(String host, int port) throws IOException {
+        host = "\"" + host + "\"";
         ProcessBuilder processBuilder = new ProcessBuilder("python", "client.py", host, "" + port);
         processBuilder.redirectErrorStream(true);
         process = processBuilder.start();

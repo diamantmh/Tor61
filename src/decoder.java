@@ -13,10 +13,10 @@ public class Decoder {
         return new OpenObject(openerID, openedID, message[2]);
     }
 
-    public circuitObject circuit(byte[] message) {
+    public CircuitObject circuit(byte[] message) {
         ByteBuffer temp = ByteBuffer.wrap(message);
         int circID = temp.getShort();
-        return new circuitObject(circID, message[2]);
+        return new CircuitObject(circID, message[2]);
     }
 
     public RelayObject relay(byte[] message) {

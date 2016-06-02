@@ -3,7 +3,7 @@ import java.nio.ByteBuffer;
 /**
  * Created by michaeldiamant on 5/31/16.
  */
-public class circuitObject {
+public class CircuitObject {
     private int circuitID;
     private int type;
     // 1 = new circuit
@@ -11,7 +11,7 @@ public class circuitObject {
     // 8 = failed
     // 4 = destroy
 
-    public circuitObject(int circuitID, int type) {
+    public CircuitObject(int circuitID, int type) {
         this.circuitID = circuitID;
         this.type = type;
     }

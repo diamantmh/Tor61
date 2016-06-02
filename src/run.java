@@ -13,7 +13,7 @@ public class Run {
         b.putInt(1234);
         b.putInt(6789);
         Decoder d = new Decoder();
-        circuitObject m = d.circuit(b.array());
+        CircuitObject m = d.circuit(b.array());
         System.out.println(m.getCircuitID());
         System.out.println(m.getType());
 

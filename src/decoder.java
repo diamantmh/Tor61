@@ -5,7 +5,22 @@ import java.nio.ByteBuffer;
  */
 public class Decoder {
 
+<<<<<<< HEAD
+    public static MessageObject decode(byte[] message) {
+        int num = message[2];
+        if (num == 8) {
+            return relay(message);
+        } else if (num >= 5 && num <= 7) {
+            return open(message);
+        } else {
+            return circuit(message);
+        }
+    }
+
+    public static OpenObject open(byte[] message) {
+=======
     public OpenObject open(byte[] message) {
+>>>>>>> 695a549b97944cc1092999966d0061240b52492a
         ByteBuffer temp = ByteBuffer.wrap(message);
         temp.position(3);
         int openerID = temp.getInt();
@@ -13,13 +28,13 @@ public class Decoder {
         return new OpenObject(openerID, openedID, message[2]);
     }
 
-    public CircuitObject circuit(byte[] message) {
+    public static CircuitObject circuit(byte[] message) {
         ByteBuffer temp = ByteBuffer.wrap(message);
         int circID = temp.getShort();
         return new CircuitObject(circID, message[2]);
     }
 
-    public RelayObject relay(byte[] message) {
+    public static RelayObject relay(byte[] message) {
         ByteBuffer temp = ByteBuffer.wrap(message);
         int circID = temp.getShort();
         temp.position(3);

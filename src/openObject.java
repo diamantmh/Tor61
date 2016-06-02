@@ -3,7 +3,7 @@ import java.nio.ByteBuffer;
 /**
  * Created by michaeldiamant on 5/31/16.
  */
-public class OpenObject {
+public class OpenObject implements MessageObject {
     private int openerID;
     private int openedID;
     private int type;
@@ -17,14 +17,12 @@ public class OpenObject {
         this.openerID = openerID;
         this.openedID = openedID;
         this.type = type;
-        if(type == 1) {
-            messageType = MessageType.CREATE;
-        } else if(type == 2) {
-            messageType = MessageType.CREATED;
-        } else if(type == 4) {
-            messageType = MessageType.DESTROY;
+        if(type == 5) {
+            messageType = MessageType.OPEN;
+        } else if(type == 6) {
+            messageType = MessageType.OPENED;
         } else {
-            messageType = MessageType.CREATE_FAILED;
+            messageType = MessageType.OPEN_FAILED;
         }
     }
 
@@ -40,6 +38,13 @@ public class OpenObject {
         return type;
     }
 
+    @Override
+    public MessageType getMessageType() {
+        return messageType;
+    }
+
+
+
     public byte[] getBytes() {
         ByteBuffer b = ByteBuffer.allocate(512);
         b.position(2);
@@ -47,5 +52,10 @@ public class OpenObject {
         b.putInt(openerID);
         b.putInt(openedID);
         return b.array();
+    }
+
+    @Override
+    public int getCircuitID() {
+        return 0;
     }
 }

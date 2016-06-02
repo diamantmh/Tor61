@@ -6,8 +6,12 @@ public class Pair {
     private int circuit;
     private int socket;
 
-
     public Pair(int circuit, int socket) {
+        if(circuit == -1) {
+            socket = 0;
+        } else if (socket == -1) {
+            circuit = 0;
+        }
         this.circuit = circuit;
         this.socket = socket;
     }
@@ -40,8 +44,10 @@ public class Pair {
     }
 
     public boolean isExit() {
-        return circuit == -1 || socket == -1;
+        return socket == -1;
     }
+
+    public boolean isEntry() { return circuit == -1; }
 
 
 }

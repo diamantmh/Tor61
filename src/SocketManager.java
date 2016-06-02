@@ -1,4 +1,3 @@
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -88,7 +87,6 @@ public class SocketManager {
     public void create(int extenderID, int extenderCircuitID, int extendTargetID) {
         SocketData outData = socketList.get(extendTargetID);
         int newCircuitID = routingTable.stage(extendTargetID, extenderCircuitID, extenderID, outData.isOwned());
-        //Send create Message to appropriate socket
         CircuitObject c = new CircuitObject(newCircuitID, 1);
         try {
             outData.getBuffer().put(c.getBytes());
@@ -101,7 +99,6 @@ public class SocketManager {
         Pair outSocketInfo = routingTable.unstage(extendTargetID, extendedCircuitID);
         SocketData data = socketList.get(outSocketInfo.getSocket());
         RelayObject r = new RelayObject(extendedCircuitID, 0, 0, 7);
-        //TODO send EXTENDED message to appropriate socket
         try {
             data.getBuffer().put(r.getBytes());
         } catch (InterruptedException e) {
@@ -152,17 +149,19 @@ public class SocketManager {
                 data.getBuffer().put(open.getBytes());
                 byte[] response = new byte[512];
                 data.getIn().read(response);
-                //TODO Parse response
-                boolean success = true; //
-                if (success) {
+                OpenObject opened = (OpenObject)Decoder.decode(response);
+                if (opened.getMessageType() == MessageType.OPENED) {
                     socketList.addSocket(data, targetSocketID);
-                    //TODO: Create listener threads
+                    Thread write = new SocketWriteThread(data.getBuffer(), data.getOut());
+                    Thread read = new SocketReadThread(data);
+                    write.start();
+                    read.start();
                     create(inID, inCircuitID, targetSocketID);
                 } else {
                     socket.close();
                 }
             } catch (IOException e) {
-                //socket.close();
+                // socket.close();
                 e.printStackTrace();
             } catch (InterruptedException e) {
                 e.printStackTrace();

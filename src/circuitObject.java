@@ -36,7 +36,7 @@ public class CircuitObject implements MessageObject {
 
     @Override
     public MessageType getMessageType() {
-        return null;
+        return messageType;
     }
 
     public byte[] getBytes() {

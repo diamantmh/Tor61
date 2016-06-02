@@ -5,8 +5,6 @@ import java.nio.ByteBuffer;
  */
 public class Decoder {
 
-    public
-
     public OpenObject open(byte[] message) {
         ByteBuffer temp = ByteBuffer.wrap(message);
         temp.position(3);

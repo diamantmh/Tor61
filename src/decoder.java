@@ -1,37 +1,41 @@
+import java.nio.ByteBuffer;
+
 /**
  * Created by michaeldiamant on 5/31/16.
  */
 public class decoder {
 
-    public int byteToDecimal(byte[] b, int start, int end) {
-        String result = "";
-        for(int i = start; i < end; i++) {
-            result += (Integer.toHexString(0xFF & b[i]));
-        }
-        return Integer.parseInt(result, 16);
-    }
-
     public openObject open(byte[] message) {
-        return new openObject(byteToDecimal(message, 3, 7), byteToDecimal(message, 7, 11), message[2]);
+        ByteBuffer temp = ByteBuffer.wrap(message);
+        temp.position(3);
+        int openerID = temp.getInt();
+        int openedID = temp.getInt();
+        return new openObject(openerID, openedID, message[2]);
     }
 
     public circuitObject circuit(byte[] message) {
-        return new circuitObject(byteToDecimal(message, 0, 2), byteToDecimal(message, 2, 3));
+        ByteBuffer temp = ByteBuffer.wrap(message);
+        int circID = temp.getShort();
+        return new circuitObject(circID, message[2]);
     }
 
     public relayObject relay(byte[] message) {
-        int circID = byteToDecimal(message, 0, 2);
-        int streamID = byteToDecimal(message, 3, 5);
-        int bodyLength = byteToDecimal(message, 10, 12);
-        byte[] b = new byte[bodyLength];
-        for(int i = 14; i < 14 + bodyLength; i++) {
-            b[i] = message[i];
-        }
+        ByteBuffer temp = ByteBuffer.wrap(message);
+        int circID = temp.getShort();
+        temp.position(3);
+        int streamID = temp.getShort();
+        temp.position(10);
+        int bodyLength = temp.getShort();
+        temp.position(14);
         if(message[13] == 1 || message[13] == 6) {
-            return new relayObject<>(circID, streamID, bodyLength, message[13], new String(b));
+            String body = "";
+            for(int i = 0; i < bodyLength; i++) {
+                body += temp.getChar();
+            }
+            return new relayObject(circID, streamID, bodyLength, message[13], body);
         } else if(message[13] == 2) {
-            return new relayObject<>(circID, streamID, bodyLength, message[13], b);
+            return new relayObject(circID, streamID, bodyLength, message[13], temp.slice().array());
         }
-        return new relayObject<>(circID, streamID, bodyLength, message[13], b);
+        return new relayObject(circID, streamID, bodyLength, message[13]);
     }
 }

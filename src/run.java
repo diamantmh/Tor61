@@ -1,27 +1,23 @@
+import java.nio.ByteBuffer;
+
 /**
  * Created by michaeldiamant on 5/31/16.
  */
 public class run {
 
     public static void main(String[] args) {
-        byte[] b = new byte[512];
-        b[0] = 0;
-        b[1] = 5;
-        b[2] = 1;
-        b[5] = (byte) 0xff;
-        b[6] = (byte) 0xff;
-        b[3] = (byte) 0x7f;
-        b[4] = (byte) 0xff;
-        b[7] = 6;
-        b[8] = 7;
-        b[9] = 8;
-        b[10] = 9;
+        ByteBuffer b = ByteBuffer.allocate(512);
+        b.put((byte)0);
+        b.put((byte)0);
+        b.put((byte)0x05);
+        b.putInt(1234);
+        b.putInt(6789);
         decoder d = new decoder();
-//        circuitObject m = d.circuit(b);
-//        System.out.println(m.getCircuitID());
-//        System.out.println(m.getType());
+        circuitObject m = d.circuit(b.array());
+        System.out.println(m.getCircuitID());
+        System.out.println(m.getType());
 
-        openObject o = d.open(b);
+        openObject o = d.open(b.array());
         System.out.println(o.getOpenerID());
         byte[] by = o.getBytes();
         o = d.open(by);

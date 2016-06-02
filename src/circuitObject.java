@@ -1,3 +1,5 @@
+import java.nio.ByteBuffer;
+
 /**
  * Created by michaeldiamant on 5/31/16.
  */
@@ -20,5 +22,12 @@ public class circuitObject {
 
     public int getType() {
         return type;
+    }
+
+    public byte[] getBytes() {
+        ByteBuffer b = ByteBuffer.allocate(512);
+        b.putShort((short) circuitID);
+        b.put((byte) type);
+        return b.array();
     }
 }

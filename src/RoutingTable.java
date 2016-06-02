@@ -41,7 +41,10 @@ public class RoutingTable {
         if (!opp.isExit()) {
             mappings.remove(opp);
         }
+    }
 
+    public Pair getBeginPair() {
+        return mappings.get(new Pair(-1, 0));
     }
 
     public int stage (int extendTargetID, int extenderCircuitID, int extenderSocketID, boolean owned) {

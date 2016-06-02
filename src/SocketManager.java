@@ -54,10 +54,13 @@ public class SocketManager {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return socketList.get(agentID);
-        //Add listener
+        SocketData data = socketList.get(agentID);
+        Thread write = new SocketWriteThread(data.getBuffer(), data.getOut());
+        Thread read = new SocketReadThread(data);
+        write.start();
+        read.start();
+        return data;
     }
-
 
     public void extend(int extenderID, int circuitNum, String body) {
         ExtendTarget target = new ExtendTarget(body);
@@ -67,7 +70,7 @@ public class SocketManager {
         } else {
             Thread open = new OpenThread(target.host, target.port, target.id, extenderID, circuitNum);
             open.start();
-            
+
         }
     }
 
@@ -80,7 +83,6 @@ public class SocketManager {
             e.printStackTrace();
             //TODO: HANDLE ERROR?
         }
-
     }
 
     public void create(int extenderID, int extenderCircuitID, int extendTargetID) {
@@ -96,12 +98,20 @@ public class SocketManager {
 
     public boolean created(int extendTargetID, int extendedCircuitID) {
         Pair outSocketInfo = routingTable.unstage(extendTargetID, extendedCircuitID);
-        SocketData data = socketList.get(outSocketInfo.getSocket());
-        RelayObject r = new RelayObject(extendedCircuitID, 0, 0, 7);
-        try {
-            data.getBuffer().put(r.getBytes());
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        if (!outSocketInfo.isEntry()) {
+            SocketData data = socketList.get(outSocketInfo.getSocket());
+            RelayObject r = new RelayObject(extendedCircuitID, 0, 0, 7);
+            try {
+                data.getBuffer().put(r.getBytes());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        } else {
+            try {
+                commandQ.put("created");
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
         return true;
     }

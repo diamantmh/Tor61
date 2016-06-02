@@ -63,7 +63,7 @@ public class SocketReadThread extends Thread {
             } case BEGIN_FAILED: {
                 relayMessage = (RelayObject) message;
                 if (outPair.isEntry()) {
-                    //TODO send to command
+                    socketManager.getCommandQ().put("failed begin");
                 } else {
                     relayMessage.setCircuitID(outPair.getCircuit());
                     socketManager.getSocketList().get(outPair.getSocket()).getBuffer().put(relayMessage.getBytes());
@@ -72,7 +72,7 @@ public class SocketReadThread extends Thread {
             } case CONNECTED: {
                 relayMessage = (RelayObject) message;
                 if (outPair.isEntry()) {
-                    //TODO send to command
+                    socketManager.getCommandQ().put("connected");
                 } else {
                     relayMessage.setCircuitID(outPair.getCircuit());
                     socketManager.getSocketList().get(outPair.getSocket()).getBuffer().put(relayMessage.getBytes());
@@ -89,7 +89,7 @@ public class SocketReadThread extends Thread {
             } case CREATE_FAILED: {
                 circuitMessage = (CircuitObject) message;
                 if (outPair.isEntry()) {
-                    //TODO send to command
+                    socketManager.getCommandQ().put("failed create");
                 } else {
                     RelayObject extendFailed = new RelayObject(outPair.getCircuit(), 0, 0, 11);
                     socketManager.getSocketList().get(outPair.getSocket()).getBuffer().put(extendFailed.getBytes());
@@ -120,7 +120,7 @@ public class SocketReadThread extends Thread {
             } case EXTENDED: {
                 relayMessage = (RelayObject) message;
                 if (outPair.isEntry()) {
-                    //TODO send to command
+                    socketManager.getCommandQ().put("extended");
                 } else {
                     relayMessage.setCircuitID(outPair.getCircuit());
                     socketManager.getSocketList().get(outPair.getSocket()).getBuffer().put(relayMessage.getBytes());
@@ -129,7 +129,7 @@ public class SocketReadThread extends Thread {
             } case EXTEND_FAILED: {
                 relayMessage = (RelayObject) message;
                 if (outPair.isEntry()) {
-                    //TODO send to command
+                    socketManager.getCommandQ().put("failed extend");
                 } else {
                     relayMessage.setCircuitID(outPair.getCircuit());
                     socketManager.getSocketList().get(outPair.getSocket()).getBuffer().put(relayMessage.getBytes());

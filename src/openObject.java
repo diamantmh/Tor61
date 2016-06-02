@@ -1,4 +1,3 @@
-import java.math.BigInteger;
 import java.nio.ByteBuffer;
 
 /**
@@ -8,6 +7,7 @@ public class OpenObject {
     private int openerID;
     private int openedID;
     private int type;
+    private MessageType messageType;
     // 5 = open
     // 6 = open success
     // 7 = open failed
@@ -17,6 +17,15 @@ public class OpenObject {
         this.openerID = openerID;
         this.openedID = openedID;
         this.type = type;
+        if(type == 1) {
+            messageType = MessageType.CREATE;
+        } else if(type == 2) {
+            messageType = MessageType.CREATED;
+        } else if(type == 4) {
+            messageType = MessageType.DESTROY;
+        } else {
+            messageType = MessageType.CREATE_FAILED;
+        }
     }
 
     public int getOpenerID() {

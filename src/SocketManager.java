@@ -1,3 +1,4 @@
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -47,16 +48,24 @@ public class SocketManager {
         return socketList.get(agentID);
     }
 
-    public boolean extend(int extenderID, int circuitNum, int extendTargetID) {
-        if (socketList.contains(extenderID)) {
-            create(extenderID, circuitNum, extendTargetID);
+    public void extend(int extenderID, int circuitNum, int extendTargetID, String body) {
+        Pair current = new Pair(circuitNum, extenderID);
+        Pair endpoint = routingTable.get(current);
+        if(endpoint.isExit()) {
+            if (socketList.contains(extenderID)) {
+                create(extenderID, circuitNum, extendTargetID);
+            } else {
+                Thread open = new OpenThread("", 0, extendTargetID, extenderID, circuitNum);
+            }
         } else {
-            Thread open = new OpenThread("", 0, extendTargetID, extenderID, circuitNum);
-//            if (data != null) {
-//                create(extenderID, circuitNum, extendTargetID);
-//            }
+            DataOutputStream s = socketList.get(extenderID).getOut();
+            RelayObject r = new RelayObject(endpoint.getCircuit(), 0, body.length(), 6, body);
+            try {
+                s.write(r.getBytes());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-        return true;
     }
 
     public void create(int extenderID, int extenderCircuitID, int extendTargetID) {

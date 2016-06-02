@@ -35,6 +35,7 @@ public class SocketReadThread extends Thread {
         int outID = 0;
         int outCircuitID = 0;
         //Create
+
         socketManager.create(inID, inCircuitID, outID);
         //Created - silent
         socketManager.create(inID, inCircuitID, outID);

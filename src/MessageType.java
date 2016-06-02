@@ -1,0 +1,7 @@
+/**
+ * Created by josephkesting on 6/1/16.
+ */
+public enum MessageType {
+    OPEN, OPENED, OPEN_FAILED, CREATE, CREATED, CREATE_FAILED, DESTROY, BEGIN,
+    DATA, END, CONNECTED, EXTEND, EXTENDED, BEGIN_FAILED, EXTEND_FAILED
+}

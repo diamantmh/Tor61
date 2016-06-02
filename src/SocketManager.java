@@ -67,8 +67,7 @@ public class SocketManager {
         } else {
             Thread open = new OpenThread(target.host, target.port, target.id, extenderID, circuitNum);
             open.start();
-
-
+            
         }
     }
 

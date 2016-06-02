@@ -43,5 +43,5 @@ public class Pair {
         return circuit == -1 || socket == -1;
     }
 
-    public boolean is
+
 }

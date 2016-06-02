@@ -3,14 +3,14 @@ import java.nio.ByteBuffer;
 /**
  * Created by michaeldiamant on 5/31/16.
  */
-public class decoder {
+public class Decoder {
 
-    public openObject open(byte[] message) {
+    public OpenObject open(byte[] message) {
         ByteBuffer temp = ByteBuffer.wrap(message);
         temp.position(3);
         int openerID = temp.getInt();
         int openedID = temp.getInt();
-        return new openObject(openerID, openedID, message[2]);
+        return new OpenObject(openerID, openedID, message[2]);
     }
 
     public circuitObject circuit(byte[] message) {
@@ -19,7 +19,7 @@ public class decoder {
         return new circuitObject(circID, message[2]);
     }
 
-    public relayObject relay(byte[] message) {
+    public RelayObject relay(byte[] message) {
         ByteBuffer temp = ByteBuffer.wrap(message);
         int circID = temp.getShort();
         temp.position(3);
@@ -32,10 +32,10 @@ public class decoder {
             for(int i = 0; i < bodyLength; i++) {
                 body += temp.getChar();
             }
-            return new relayObject(circID, streamID, bodyLength, message[13], body);
+            return new RelayObject(circID, streamID, bodyLength, message[13], body);
         } else if(message[13] == 2) {
-            return new relayObject(circID, streamID, bodyLength, message[13], temp.slice().array());
+            return new RelayObject(circID, streamID, bodyLength, message[13], temp.slice().array());
         }
-        return new relayObject(circID, streamID, bodyLength, message[13]);
+        return new RelayObject(circID, streamID, bodyLength, message[13]);
     }
 }

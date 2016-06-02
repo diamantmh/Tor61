@@ -3,7 +3,7 @@ import java.nio.ByteBuffer;
 /**
  * Created by michaeldiamant on 5/31/16.
  */
-public class relayObject {
+public class RelayObject {
     private int circuitID;
     private int streamID;
     private int bodyLength;
@@ -19,7 +19,7 @@ public class relayObject {
     private byte[] data;
     private String body;
 
-    public relayObject(int circuitID, int streamID, int bodyLength, int command, byte[] data) {
+    public RelayObject(int circuitID, int streamID, int bodyLength, int command, byte[] data) {
         this.circuitID = circuitID;
         this.streamID = streamID;
         this.bodyLength = bodyLength;
@@ -28,7 +28,7 @@ public class relayObject {
         this.body = null;
     }
 
-    public relayObject(int circuitID, int streamID, int bodyLength, int command, String body) {
+    public RelayObject(int circuitID, int streamID, int bodyLength, int command, String body) {
         this.circuitID = circuitID;
         this.streamID = streamID;
         this.bodyLength = bodyLength;
@@ -37,7 +37,7 @@ public class relayObject {
         this.data = null;
     }
 
-    public relayObject(int circuitID, int streamID, int bodyLength, int command) {
+    public RelayObject(int circuitID, int streamID, int bodyLength, int command) {
         this.circuitID = circuitID;
         this.streamID = streamID;
         this.bodyLength = bodyLength;

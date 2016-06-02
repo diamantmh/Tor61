@@ -4,11 +4,11 @@
 import java.io.*;
 import java.net.*;
 
-public class thing {
+public class Thing {
     private ServerSocket server;
 
 
-    public thing(int port) {
+    public Thing(int port) {
 
         System.out.println("listening on port: " + port);
 

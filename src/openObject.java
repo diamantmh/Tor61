@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 /**
  * Created by michaeldiamant on 5/31/16.
  */
-public class openObject {
+public class OpenObject {
     private int openerID;
     private int openedID;
     private int type;
@@ -13,7 +13,7 @@ public class openObject {
     // 7 = open failed
 
 
-    public openObject(int openerID, int openedID, int type) {
+    public OpenObject(int openerID, int openedID, int type) {
         this.openerID = openerID;
         this.openedID = openedID;
         this.type = type;

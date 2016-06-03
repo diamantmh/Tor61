@@ -53,9 +53,6 @@ public class SocketReadThread extends Thread {
                 String host = splitBody[0];
                 int port = Integer.parseInt(splitBody[1]);
                 if (outPair.isExit()) {
-                    //TODO:SEND to proxy
-                    //send back appropriate message
-                    //^Create new thread
                     BufferPair bp = SocketServerBuffers.getInstance().create(relayMessage.getCircuitID(), relayMessage.getStreamID());
                     Thread readFromProxyBuffer = new WriteToTorFromServerBufferThread(inCircuitID, relayMessage.getStreamID(), bp.getProxyToTor());
                     readFromProxyBuffer.start();

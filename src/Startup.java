@@ -75,7 +75,7 @@ public class Startup {
 
                     Pair start = manager.getRoutingTable().getBeginPair();
                     RelayObject beginMessage = createBeginMessage(start, result);
-                    SocketClientBuffers.getInstance().create(beginMessage.getStreamID());
+//                    SocketClientBuffers.getInstance().create(beginMessage.getStreamID());
                     manager.getSocketList().get(start.getSocket()).getBuffer().put(beginMessage.getBytes());
                     String reply = manager.getCommandQ().take();
                     if(reply.equals("connected")) {

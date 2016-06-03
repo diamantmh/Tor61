@@ -1,4 +1,4 @@
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.List;
 import java.util.Random;
 
@@ -22,21 +22,27 @@ public class Startup {
         int data = GROUP_NUM * 1000 + INSTANCE_NUM;
         manager = SocketManager.getInstance(data);
         rand = new Random();
-        RegistrationAgent agent = null;
-//        try {
-//            Thread listen = new ListenThread(LISTEN_PORT);
-//            listen.start();
-//            agent = new RegistrationAgent(REG_HOST, REG_PORT);
-//            String groupName = "Tor61Router-"+GROUP_NUM+"-"+INSTANCE_NUM;
-//            agent.register(LISTEN_PORT, data, groupName);
-//            FetchResult[] viableRouters = agent.fetch(FETCH_PREFIX);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-        HTTPProxy p = new HTTPProxy(33333);
-        p.run();
-        List<FetchResult> viableRouters = new ArrayList<>(1);
-        viableRouters.add(new FetchResult("127.0.0.1", LISTEN_PORT, data));
+        RegistrationAgent agent;
+        try {
+            agent = new RegistrationAgent(REG_HOST, REG_PORT);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            Thread listen = new ListenThread(LISTEN_PORT);
+            listen.start();
+            agent = new RegistrationAgent(REG_HOST, REG_PORT);
+            String groupName = "Tor61Router-"+GROUP_NUM+"-"+INSTANCE_NUM;
+            agent.register(LISTEN_PORT, data, groupName);
+            List<FetchResult> viableRouters = agent.fetch(FETCH_PREFIX);
+            createCircuit(viableRouters);
+            startupProxy();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+//        List<FetchResult> viableRouters = new ArrayList<>(1);
+//        viableRouters.add(new FetchResult("127.0.0.1", LISTEN_PORT, data));
         //createCircuit(viableRouters);
     }
 
@@ -60,20 +66,23 @@ public class Startup {
     }
 
     private static void startupProxy() {
-        HTTPProxy proxy = new HTTPProxy(PROXY_PORT);
-        proxy.run();
+        HTTPProxy p = HTTPProxy.getInstance(PROXY_PORT);
+        p.run();
         while(true) {
             try {
                 String result = manager.getCommandQ().take();
                 if (result.startsWith("begin")) {
+
                     Pair start = manager.getRoutingTable().getBeginPair();
                     RelayObject beginMessage = createBeginMessage(start, result);
+                    SocketClientBuffers.getInstance().create(beginMessage.getStreamID());
                     manager.getSocketList().get(start.getSocket()).getBuffer().put(beginMessage.getBytes());
                     String reply = manager.getCommandQ().take();
                     if(reply.equals("connected")) {
                         Thread streamListen = new StreamListenThread(beginMessage.getStreamID());
+                        streamListen.start();
                     } else {
-                        SocketBuffers.getInstance().close(beginMessage.getStreamID());
+                        SocketClientBuffers.getInstance().close(beginMessage.getStreamID());
                     }
                 }
             } catch (InterruptedException e) {
@@ -87,17 +96,5 @@ public class Startup {
         String body = split[1]+":"+split[2]+"\0";
         RelayObject begin = new RelayObject(start.getCircuit(), Integer.parseInt(split[3]), body.length(), 1, body);
         return begin;
-    }
-
-    public class NewCircuit extends Thread {
-
-        
-        public NewCircuit() {
-
-        }
-
-        public void run() {
-
-        }
     }
 }

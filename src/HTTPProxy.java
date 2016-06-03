@@ -1,7 +1,6 @@
 /**
  * Created by michaeldiamant on 6/1/16.
  */
-import jnr.constants.platform.Sock;
 
 import java.io.*;
 import java.net.*;
@@ -25,13 +24,21 @@ public class HTTPProxy {
     private ServerSocket serverSocket;
     private static SocketManager manager;
     private int streamID;
-    private SocketBuffers buffer;
+    private SocketClientBuffers buffer;
+    private static HTTPProxy instance = null;
 
-    public HTTPProxy(int port) {
+    public static HTTPProxy getInstance(int port) {
+        if (instance == null) {
+            instance = new HTTPProxy(port);
+        }
+        return instance;
+    }
+
+    private HTTPProxy(int port) {
         buffers = new HashMap<>();
         manager = SocketManager.getInstance(0);
         streamID = 0;
-        buffer = SocketBuffers.getInstance();
+        buffer = SocketClientBuffers.getInstance();
         try {
             serverSocket = new ServerSocket(port);
         } catch (IOException e) {
@@ -272,7 +279,8 @@ public class HTTPProxy {
                     manager.getCommandQ().put("begin " + address.getHost() + " " +  address.getPort() + " " + currentStream);
                     List<byte[]> b = pack(request);
                     for(int i = 0; i < b.size(); i++) {
-                        buffer.put(currentStream, b.get(i));
+                        BlockingQueue proxyToTor = buffer.get(currentStream).getProxyToTor();
+                        proxyToTor.put(b.get(i));
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -374,5 +382,9 @@ public class HTTPProxy {
         return result;
     }
 
+    public void begin(int streamID, int circuitID, String host, int port) {
 
+        Thread setup = new ServerSocketStartupThread(streamID, circuitID, host, port);
+        setup.start();
+    }
 }

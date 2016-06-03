@@ -63,7 +63,7 @@ public class Startup {
 
     public class NewCircuit extends Thread {
 
-        
+
         public NewCircuit() {
 
         }

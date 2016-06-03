@@ -13,7 +13,7 @@ public class Startup {
     private static final int INSTANCE_NUM = 1914;
     private static final int LISTEN_PORT = 1993;
     private static final int PROXY_PORT = 5555;
-    private static final String FETCH_PREFIX = "Tor61Router";
+    private static final String FETCH_PREFIX = "Tor61Router-1453";
     private static SocketManager manager;
     private static Random rand;
 
@@ -23,11 +23,6 @@ public class Startup {
         manager = SocketManager.getInstance(data);
         rand = new Random();
         RegistrationAgent agent;
-        try {
-            agent = new RegistrationAgent(REG_HOST, REG_PORT);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         try {
             Thread listen = new ListenThread(LISTEN_PORT);
             listen.start();
@@ -50,7 +45,7 @@ public class Startup {
         int count = 3;
         while(count > 0) {
             int n = rand.nextInt(viableRouters.size());
-            String body = viableRouters.get(n).getIp() + ":" + viableRouters.get(n).getIp() + "\0" + viableRouters.get(n).getData();
+            String body = viableRouters.get(n).getIp() + ":" + viableRouters.get(n).getPort() + "\0" + viableRouters.get(n).getData();
             manager.extend(0, -1, body);
             try {
                 String result = manager.getCommandQ().take();

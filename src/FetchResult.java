@@ -1,5 +1,5 @@
 /**
- * Created by michaeldiamant on 6/1/16.
+ * Created by josephkesting on 6/2/16.
  */
 public class FetchResult {
     private String ip;

@@ -5,7 +5,6 @@ import java.nio.ByteBuffer;
  */
 public class Decoder {
 
-<<<<<<< HEAD
     public static MessageObject decode(byte[] message) {
         int num = message[2];
         if (num == 8) {
@@ -18,9 +17,7 @@ public class Decoder {
     }
 
     public static OpenObject open(byte[] message) {
-=======
-    public OpenObject open(byte[] message) {
->>>>>>> 695a549b97944cc1092999966d0061240b52492a
+
         ByteBuffer temp = ByteBuffer.wrap(message);
         temp.position(3);
         int openerID = temp.getInt();

@@ -125,6 +125,8 @@ public class SocketManager {
         public ExtendTarget(String body) {
             String[] split = body.split("\0");
             String[] hostPort = split[0].split(":");
+            System.out.println(body);
+            System.out.println(hostPort);
             host = hostPort[0];
             port = Integer.parseInt(hostPort[1]);
             id = Integer.parseInt(split[1]);

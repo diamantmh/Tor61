@@ -1,5 +1,6 @@
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.BlockingQueue;
 
 /**
  * Created by josephkesting on 6/1/16.
@@ -52,9 +53,10 @@ public class SocketReadThread extends Thread {
                 String host = splitBody[0];
                 int port = Integer.parseInt(splitBody[1]);
                 if (outPair.isExit()) {
-                    //TODO:SEND to proxy
-                    //send back appropriate message
-                    //^Create new thread
+                    BufferPair bp = SocketServerBuffers.getInstance().create(relayMessage.getCircuitID(), relayMessage.getStreamID());
+                    Thread readFromProxyBuffer = new WriteToTorFromServerBufferThread(inCircuitID, relayMessage.getStreamID(), bp.getProxyToTor());
+                    readFromProxyBuffer.start();
+                    HTTPProxy.getInstance(0).begin(relayMessage.getStreamID(), inCircuitID, host, port);
                 } else {
                     relayMessage.setCircuitID(outPair.getCircuit());
                     socketManager.getSocketList().get(outPair.getSocket()).getBuffer().put(relayMessage.getBytes());
@@ -63,7 +65,7 @@ public class SocketReadThread extends Thread {
             } case BEGIN_FAILED: {
                 relayMessage = (RelayObject) message;
                 if (outPair.isEntry()) {
-                    //TODO send to command
+                    socketManager.getCommandQ().put("failed begin");
                 } else {
                     relayMessage.setCircuitID(outPair.getCircuit());
                     socketManager.getSocketList().get(outPair.getSocket()).getBuffer().put(relayMessage.getBytes());
@@ -72,7 +74,7 @@ public class SocketReadThread extends Thread {
             } case CONNECTED: {
                 relayMessage = (RelayObject) message;
                 if (outPair.isEntry()) {
-                    //TODO send to command
+                    socketManager.getCommandQ().put("connected");
                 } else {
                     relayMessage.setCircuitID(outPair.getCircuit());
                     socketManager.getSocketList().get(outPair.getSocket()).getBuffer().put(relayMessage.getBytes());
@@ -89,7 +91,7 @@ public class SocketReadThread extends Thread {
             } case CREATE_FAILED: {
                 circuitMessage = (CircuitObject) message;
                 if (outPair.isEntry()) {
-                    //TODO send to command
+                    socketManager.getCommandQ().put("failed create");
                 } else {
                     RelayObject extendFailed = new RelayObject(outPair.getCircuit(), 0, 0, 11);
                     socketManager.getSocketList().get(outPair.getSocket()).getBuffer().put(extendFailed.getBytes());
@@ -120,7 +122,7 @@ public class SocketReadThread extends Thread {
             } case EXTENDED: {
                 relayMessage = (RelayObject) message;
                 if (outPair.isEntry()) {
-                    //TODO send to command
+                    socketManager.getCommandQ().put("extended");
                 } else {
                     relayMessage.setCircuitID(outPair.getCircuit());
                     socketManager.getSocketList().get(outPair.getSocket()).getBuffer().put(relayMessage.getBytes());
@@ -129,7 +131,7 @@ public class SocketReadThread extends Thread {
             } case EXTEND_FAILED: {
                 relayMessage = (RelayObject) message;
                 if (outPair.isEntry()) {
-                    //TODO send to command
+                    socketManager.getCommandQ().put("failed extend");
                 } else {
                     relayMessage.setCircuitID(outPair.getCircuit());
                     socketManager.getSocketList().get(outPair.getSocket()).getBuffer().put(relayMessage.getBytes());
@@ -138,9 +140,11 @@ public class SocketReadThread extends Thread {
             } case DATA: {
                 relayMessage = (RelayObject) message;
                 if (outPair.isExit()) {
-                    //Send to proxy
+                    BlockingQueue buff = SocketServerBuffers.getInstance().get(relayMessage.getCircuitID(), relayMessage.getStreamID()).getTorToProxy();
+                    buff.put(relayMessage.getData());
                 } else if (outPair.isEntry()) {
-                    //Send to proxy
+                    BlockingQueue buff = SocketClientBuffers.getInstance().get((relayMessage.getStreamID())).getTorToProxy();
+                    buff.put((relayMessage).getData());
                 } else {
                     relayMessage.setCircuitID(outPair.getCircuit());
                     socketManager.getSocketList().get(outPair.getSocket()).getBuffer().put(relayMessage.getBytes());
@@ -149,9 +153,9 @@ public class SocketReadThread extends Thread {
             } case END: {
                 relayMessage = (RelayObject) message;
                 if (outPair.isExit()) {
-                    //Send to proxy, tear down stream buffer
+                    SocketServerBuffers.getInstance().close(relayMessage.getCircuitID(), relayMessage.getStreamID());
                 } else if (outPair.isEntry()) {
-                    //Send to proxy tear down stream buffer
+                    SocketClientBuffers.getInstance().close(relayMessage.getStreamID());
                 } else {
                     relayMessage.setCircuitID(outPair.getCircuit());
                     socketManager.getSocketList().get(outPair.getSocket()).getBuffer().put(relayMessage.getBytes());
@@ -168,7 +172,7 @@ public class SocketReadThread extends Thread {
                 break;
             }
         }
-        
-        
     }
+
+
 }

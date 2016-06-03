@@ -31,11 +31,11 @@ public class RegistrationAgent {
 
     public RegistrationAgent(String host, int port) throws IOException {
         host = "\"" + host + "\"";
-        ProcessBuilder processBuilder = new ProcessBuilder("python", "client.py", host, "" + port);
-        processBuilder.redirectErrorStream(true);
-        process = processBuilder.start();
-        out = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
-        in = new BufferedReader(new InputStreamReader(process.getInputStream()));
+//        ProcessBuilder processBuilder = new ProcessBuilder("python", "client.py", host, "" + port);
+//        processBuilder.redirectErrorStream(true);
+//        process = processBuilder.start();
+//        out = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
+//        in = new BufferedReader(new InputStreamReader(process.getInputStream()));
         interpreter = new PythonInterpreter();
         interpreter.execfile("agent.py");
         agent = interpreter.eval("RegistrationAgent("+host+", "+port+")");

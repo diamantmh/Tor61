@@ -23,8 +23,8 @@ class RegistrationAgent(object):
 		inSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) 
 		inSocket.bind(("0.0.0.0", self.GLOBAL_PORT + 1))
 		self.inSocket = inSocket
-		# self.addr = socket.gethostbyname(socket.gethostname())
-		self.addr = "127.0.0.1" #DELETE
+		self.addr = socket.gethostbyname(socket.gethostname())
+		#self.addr = "127.0.0.1" #DELETE
 
 		self.serviceAddress = (hostName, hostPort)
 

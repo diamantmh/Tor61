@@ -41,18 +41,28 @@ public class RoutingTable {
         if (!opp.isExit()) {
             mappings.remove(opp);
         }
+    }
 
+    public Pair getBeginPair() {
+        return mappings.get(new Pair(-1, 0));
     }
 
     public int stage (int extendTargetID, int extenderCircuitID, int extenderSocketID, boolean owned) {
         int extendTargetCircuitID = getCircuitNum(owned);
-        mappings.put(new Pair(extendTargetCircuitID, extendTargetID), new Pair(extenderCircuitID, extenderSocketID));
+        Pair a = new Pair(extendTargetCircuitID, extendTargetID);
+        Pair b = new Pair(extenderCircuitID, extenderSocketID);
+        System.out.println(a.toString());
+        System.out.println(b.toString());
+        mappings.put(a, b);
+        System.out.println(mappings.get(a));
         return extendTargetCircuitID;
     }
 
     public Pair unstage (int circuitID, int socketID) {
         Pair staged = new Pair(circuitID, socketID);
         Pair opp = mappings.get(staged);
+        System.out.println(staged.toString());
+        System.out.println(opp.toString());
         if (opp != null) {
             mappings.put(opp, staged);
         }

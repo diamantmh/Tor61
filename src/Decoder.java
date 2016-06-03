@@ -5,22 +5,23 @@ import java.nio.ByteBuffer;
  */
 public class Decoder {
 
-<<<<<<< HEAD
     public static MessageObject decode(byte[] message) {
         int num = message[2];
-        if (num == 8) {
+        System.out.println("Decoded Num: " + num);
+        if (num == (byte)0x08) {
+            System.out.println("relay");
             return relay(message);
-        } else if (num >= 5 && num <= 7) {
+        } else if (num >= (byte)0x05 && num <= (byte)0x07) {
+            System.out.println("Open");
             return open(message);
         } else {
+            System.out.println("Circuit");
             return circuit(message);
         }
     }
 
     public static OpenObject open(byte[] message) {
-=======
-    public OpenObject open(byte[] message) {
->>>>>>> 695a549b97944cc1092999966d0061240b52492a
+
         ByteBuffer temp = ByteBuffer.wrap(message);
         temp.position(3);
         int openerID = temp.getInt();
@@ -42,13 +43,13 @@ public class Decoder {
         temp.position(10);
         int bodyLength = temp.getShort();
         temp.position(14);
-        if(message[13] == 1 || message[13] == 6) {
+        if(message[13] == (byte)0x01 || message[13] == (byte)0x06) {
             String body = "";
             for(int i = 0; i < bodyLength; i++) {
                 body += temp.getChar();
             }
             return new RelayObject(circID, streamID, bodyLength, message[13], body);
-        } else if(message[13] == 2) {
+        } else if(message[13] == (byte)0x02) {
             return new RelayObject(circID, streamID, bodyLength, message[13], temp.slice().array());
         }
         return new RelayObject(circID, streamID, bodyLength, message[13]);

@@ -1,4 +1,3 @@
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -51,14 +50,19 @@ public class SocketManager {
 
     public SocketData connectionOpened(Socket s, int agentID) {
         try {
-            socketList.addSocket(s, false, agentID);
+            if (!socketList.contains(s.getPort())) {
+                socketList.addSocket(s, false, agentID);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return socketList.get(agentID);
-        //Add listener
+        SocketData data = socketList.get(agentID);
+        Thread write = new SocketWriteThread(data.getBuffer(), data.getOut());
+        Thread read = new SocketReadThread(data);
+        write.start();
+        read.start();
+        return data;
     }
-
 
     public void extend(int extenderID, int circuitNum, String body) {
         ExtendTarget target = new ExtendTarget(body);
@@ -68,7 +72,6 @@ public class SocketManager {
         } else {
             Thread open = new OpenThread(target.host, target.port, target.id, extenderID, circuitNum);
             open.start();
-
 
         }
     }
@@ -82,13 +85,11 @@ public class SocketManager {
             e.printStackTrace();
             //TODO: HANDLE ERROR?
         }
-
     }
 
     public void create(int extenderID, int extenderCircuitID, int extendTargetID) {
         SocketData outData = socketList.get(extendTargetID);
         int newCircuitID = routingTable.stage(extendTargetID, extenderCircuitID, extenderID, outData.isOwned());
-        //Send create Message to appropriate socket
         CircuitObject c = new CircuitObject(newCircuitID, 1);
         try {
             outData.getBuffer().put(c.getBytes());
@@ -98,14 +99,22 @@ public class SocketManager {
     }
 
     public boolean created(int extendTargetID, int extendedCircuitID) {
-        Pair outSocketInfo = routingTable.unstage(extendTargetID, extendedCircuitID);
-        SocketData data = socketList.get(outSocketInfo.getSocket());
-        RelayObject r = new RelayObject(extendedCircuitID, 0, 0, 7);
-        //TODO send EXTENDED message to appropriate socket
-        try {
-            data.getBuffer().put(r.getBytes());
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        Pair outSocketInfo = routingTable.unstage(extendedCircuitID, extendTargetID);
+        if (!outSocketInfo.isEntry()) {
+            SocketData data = socketList.get(outSocketInfo.getSocket());
+            System.out.println(data);
+            RelayObject r = new RelayObject(extendedCircuitID, 0, 0, 7);
+            try {
+                data.getBuffer().put(r.getBytes());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        } else {
+            try {
+                commandQ.put("created");
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
         return true;
     }
@@ -119,6 +128,8 @@ public class SocketManager {
         public ExtendTarget(String body) {
             String[] split = body.split("\0");
             String[] hostPort = split[0].split(":");
+            System.out.println(body);
+            System.out.println(hostPort);
             host = hostPort[0];
             port = Integer.parseInt(hostPort[1]);
             id = Integer.parseInt(split[1]);
@@ -149,22 +160,22 @@ public class SocketManager {
                 socket.connect(new InetSocketAddress(host, port));
                 data = new SocketData(socket, true, targetSocketID);
                 OpenObject open = new OpenObject(myID, targetSocketID, 5);
-                data.getBuffer().put(open.getBytes());
+                data.getOut().write(open.getBytes());
                 byte[] response = new byte[512];
                 data.getIn().read(response);
-                //TODO Parse response
-                boolean success = true; //
-                if (success) {
-                    socketList.addSocket(data, targetSocketID);
-                    //TODO: Create listener threads
-                    create(inID, inCircuitID, targetSocketID);
+                OpenObject opened = (OpenObject)Decoder.decode(response);
+                if (opened.getMessageType() == MessageType.OPENED) {
+                    socketList.addSocket(data, data.getPort());
+                    Thread write = new SocketWriteThread(data.getBuffer(), data.getOut());
+                    Thread read = new SocketReadThread(data);
+                    write.start();
+                    read.start();
+                    create(inID, inCircuitID, data.getPort());
                 } else {
                     socket.close();
                 }
             } catch (IOException e) {
-                //socket.close();
-                e.printStackTrace();
-            } catch (InterruptedException e) {
+                // socket.close();
                 e.printStackTrace();
             }
         }

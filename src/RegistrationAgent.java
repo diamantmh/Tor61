@@ -3,7 +3,8 @@ import org.python.util.PythonInterpreter;
 
 import java.io.*;
 import java.math.BigInteger;
-
+import java.util.ArrayList;
+import java.util.List;
 /**
  * Created by josephkesting on 5/31/16.
  */
@@ -14,8 +15,8 @@ public class RegistrationAgent {
             RegistrationAgent reg = new RegistrationAgent("cse461.cs.washington.edu", 46101);
             System.out.println(reg.probe());
             reg.register(1234, 14000, "hermanos");
-            System.out.println(reg.fetch("")[0].getData());
-            reg.quit();
+//            System.out.println(reg.fetch("")[0].getData());
+//            reg.quit();
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println("HERE");
@@ -30,11 +31,11 @@ public class RegistrationAgent {
 
     public RegistrationAgent(String host, int port) throws IOException {
         host = "\"" + host + "\"";
-        ProcessBuilder processBuilder = new ProcessBuilder("python", "client.py", host, "" + port);
-        processBuilder.redirectErrorStream(true);
-        process = processBuilder.start();
-        out = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
-        in = new BufferedReader(new InputStreamReader(process.getInputStream()));
+//        ProcessBuilder processBuilder = new ProcessBuilder("python", "client.py", host, "" + port);
+//        processBuilder.redirectErrorStream(true);
+//        process = processBuilder.start();
+//        out = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
+//        in = new BufferedReader(new InputStreamReader(process.getInputStream()));
         interpreter = new PythonInterpreter();
         interpreter.execfile("agent.py");
         agent = interpreter.eval("RegistrationAgent("+host+", "+port+")");
@@ -46,16 +47,16 @@ public class RegistrationAgent {
 
     }
 
-    public FetchResult[] fetch(String prefix) throws IOException {
+    public List<FetchResult> fetch(String prefix) throws IOException {
         PyList res = (PyList)agent.invoke("fetch", new PyString(prefix));
-        FetchResult[] results = new FetchResult[res.size()];
+        List<FetchResult> results = new ArrayList<>();
         for (int i = 0; i < res.size(); i++) {
             PyList itemLine = (PyList)res.get(i);
             String ip = (String) itemLine.get(0);
             int port = (int) itemLine.get(1);
             int data = ((BigInteger) itemLine.get(2)).intValue();
             FetchResult item = new FetchResult(ip, port, data);
-            results[i] = item;
+            results.add(i, item);
         }
         return results;
     }
@@ -73,5 +74,7 @@ public class RegistrationAgent {
     public void quit() throws IOException {
         agent.invoke("close");
     }
+
+
 
 }

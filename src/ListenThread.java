@@ -18,18 +18,24 @@ public class ListenThread extends Thread {
 
     public void run () {
         ServerSocket serverSocket = null;
+        try {
+            serverSocket = new ServerSocket(port);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
 
 
         while(true) {
-            try {
-                serverSocket = new ServerSocket(port);
-                Socket clientSocket = serverSocket.accept();
-                Thread opened = new SocketOpenedThread(clientSocket);
-                opened.start();
 
+            Socket clientSocket = null;
+            try {
+                clientSocket = serverSocket.accept();
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            Thread opened = new SocketOpenedThread(clientSocket);
+            opened.start();
         }
     }
 
@@ -47,10 +53,15 @@ public class ListenThread extends Thread {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            //Process message
-            int agentID = 0;//TODO
+            OpenObject open = (OpenObject) Decoder.decode(openMessage);
+            int agentID = s.getPort();
             SocketData data = manager.connectionOpened(s, agentID);
-            //Send back opened message
+            OpenObject opened = new OpenObject(open.getOpenerID(), open.getOpenedID(), 6);
+            try {
+                data.getBuffer().put(opened.getBytes());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

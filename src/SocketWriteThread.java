@@ -17,8 +17,10 @@ public class SocketWriteThread extends Thread {
 
     public void run() {
         while(true) {
+            System.out.println("Socket Write thread");
             try {
                 byte[] message = (byte[]) buffer.take();
+                System.out.println("SocketWriteThread post take");
                 if (message == null || message.length != 512) {
                     //Do something?
                     break;

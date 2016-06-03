@@ -34,7 +34,7 @@ public class SocketReadThread extends Thread {
     }
 
     private void processMessage(byte[] messageBytes) throws InterruptedException {
-        int inID = data.getAgentID();
+        int inID = data.getPort();
         MessageObject message = Decoder.decode(messageBytes);
         int inCircuitID = message.getCircuitID();
         MessageType type = message.getMessageType();
@@ -47,12 +47,14 @@ public class SocketReadThread extends Thread {
 
         switch(type) {
             case BEGIN: {
+                System.out.println("Begin received");
                 relayMessage = (RelayObject) message;
                 String body = relayMessage.getBody();
                 String[] splitBody = body.split(":");
                 String host = splitBody[0];
                 int port = Integer.parseInt(splitBody[1]);
                 if (outPair.isExit()) {
+                    System.out.println("Begin received at exit");
                     BufferPair bp = SocketServerBuffers.getInstance().create(relayMessage.getCircuitID(), relayMessage.getStreamID());
                     Thread readFromProxyBuffer = new WriteToTorFromServerBufferThread(inCircuitID, relayMessage.getStreamID(), bp.getProxyToTor());
                     readFromProxyBuffer.start();
@@ -74,6 +76,7 @@ public class SocketReadThread extends Thread {
             } case CONNECTED: {
                 relayMessage = (RelayObject) message;
                 if (outPair.isEntry()) {
+                    System.out.println("Connected received at entry");
                     socketManager.getCommandQ().put("connected");
                 } else {
                     relayMessage.setCircuitID(outPair.getCircuit());

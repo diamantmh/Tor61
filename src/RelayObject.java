@@ -32,6 +32,7 @@ public class RelayObject implements MessageObject {
         this.body = body;
         this.data = data;
         if(command == 1) {
+            System.out.println("BEGIN");
             messageType = MessageType.BEGIN;
         } else if(command == 2) {
             messageType = MessageType.DATA;
@@ -111,7 +112,15 @@ public class RelayObject implements MessageObject {
         b.position(11);
         b.putShort((short) bodyLength);
         b.put((byte) command);
-
+        System.out.println("Command: " + command);
+        if(messageType == MessageType.EXTEND || messageType == MessageType.OPEN) {
+            for(int i = 0; i < body.length(); i++) {
+                b.putChar(body.charAt(i));
+            }
+        }
+        if (data != null) {
+            b.wrap(data);
+        }
         return b.array();
     }
 

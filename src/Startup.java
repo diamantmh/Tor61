@@ -65,7 +65,9 @@ public class Startup {
         p.run();
         while(true) {
             try {
+                System.out.println("Startup pretake");
                 String result = manager.getCommandQ().take();
+                System.out.println("Result: " + result);
                 if (result.startsWith("begin")) {
 
                     Pair start = manager.getRoutingTable().getBeginPair();

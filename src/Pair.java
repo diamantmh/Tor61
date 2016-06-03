@@ -7,11 +7,6 @@ public class Pair {
     private int socket;
 
     public Pair(int circuit, int socket) {
-        if(circuit == -1) {
-            socket = 0;
-        } else if (socket == -1) {
-            circuit = 0;
-        }
         this.circuit = circuit;
         this.socket = socket;
     }
@@ -49,5 +44,7 @@ public class Pair {
 
     public boolean isEntry() { return circuit == -1; }
 
-
+    public String toString() {
+        return "(" + circuit + ", " + socket + ")";
+    }
 }

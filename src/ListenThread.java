@@ -23,7 +23,7 @@ public class ListenThread extends Thread {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        ;
+
 
 
         while(true) {
@@ -54,7 +54,7 @@ public class ListenThread extends Thread {
                 e.printStackTrace();
             }
             OpenObject open = (OpenObject) Decoder.decode(openMessage);
-            int agentID = open.getOpenerID();
+            int agentID = s.getPort();
             SocketData data = manager.connectionOpened(s, agentID);
             OpenObject opened = new OpenObject(open.getOpenerID(), open.getOpenedID(), 6);
             try {

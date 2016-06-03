@@ -47,13 +47,20 @@ public class HTTPProxy {
     }
 
     public void run(){
-        while (true) {
-            try {
-                Socket clientSocket = serverSocket.accept();
-                Thread setupThread = new SetupThread(clientSocket);
-                setupThread.start();
-            } catch (IOException e) {
-                System.out.println(e);
+        Thread accept = new AcceptThread();
+        accept.start();
+    }
+
+    public class AcceptThread extends Thread {
+        public void run() {
+            while (true) {
+                try {
+                    Socket clientSocket = serverSocket.accept();
+                    Thread setupThread = new SetupThread(clientSocket);
+                    setupThread.start();
+                } catch (IOException e) {
+                    System.out.println(e);
+                }
             }
         }
     }
@@ -279,6 +286,7 @@ public class HTTPProxy {
                     Thread listenForResponse = new ProxySocketWriteThread(clientSocket, buffer.get(currentStream).getTorToProxy());
                     listenForResponse.start();
                     manager.getCommandQ().put("begin " + address.getHost() + " " +  address.getPort() + " " + currentStream);
+                    System.out.println("CommandQ size = " + manager.getCommandQ().size());
                     List<byte[]> b = pack(request);
                     for(int i = 0; i < b.size(); i++) {
                         BlockingQueue proxyToTor = buffer.get(currentStream).getProxyToTor();
@@ -375,10 +383,11 @@ public class HTTPProxy {
         List<byte[]> result = new ArrayList<>();
         ByteBuffer b = ByteBuffer.allocate(498);
         for(int i = 0; i < request.length(); i++) {
-            if(i % 498 == 0 && i != 0) {
+            if(i % 249 == 0 && i != 0) {
                 result.add(b.array());
                 b = ByteBuffer.allocate(498);
             }
+            System.out.println(i);
             b.putChar(request.charAt(i));
         }
         return result;

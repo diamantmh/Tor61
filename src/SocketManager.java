@@ -50,7 +50,9 @@ public class SocketManager {
 
     public SocketData connectionOpened(Socket s, int agentID) {
         try {
-            socketList.addSocket(s, false, agentID);
+            if (!socketList.contains(s.getPort())) {
+                socketList.addSocket(s, false, agentID);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -97,9 +99,10 @@ public class SocketManager {
     }
 
     public boolean created(int extendTargetID, int extendedCircuitID) {
-        Pair outSocketInfo = routingTable.unstage(extendTargetID, extendedCircuitID);
+        Pair outSocketInfo = routingTable.unstage(extendedCircuitID, extendTargetID);
         if (!outSocketInfo.isEntry()) {
             SocketData data = socketList.get(outSocketInfo.getSocket());
+            System.out.println(data);
             RelayObject r = new RelayObject(extendedCircuitID, 0, 0, 7);
             try {
                 data.getBuffer().put(r.getBytes());
@@ -157,24 +160,22 @@ public class SocketManager {
                 socket.connect(new InetSocketAddress(host, port));
                 data = new SocketData(socket, true, targetSocketID);
                 OpenObject open = new OpenObject(myID, targetSocketID, 5);
-                data.getBuffer().put(open.getBytes());
+                data.getOut().write(open.getBytes());
                 byte[] response = new byte[512];
                 data.getIn().read(response);
                 OpenObject opened = (OpenObject)Decoder.decode(response);
                 if (opened.getMessageType() == MessageType.OPENED) {
-                    socketList.addSocket(data, targetSocketID);
+                    socketList.addSocket(data, data.getPort());
                     Thread write = new SocketWriteThread(data.getBuffer(), data.getOut());
                     Thread read = new SocketReadThread(data);
                     write.start();
                     read.start();
-                    create(inID, inCircuitID, targetSocketID);
+                    create(inID, inCircuitID, data.getPort());
                 } else {
                     socket.close();
                 }
             } catch (IOException e) {
                 // socket.close();
-                e.printStackTrace();
-            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }

@@ -23,7 +23,6 @@ CLASSES = \
 		ProxySocketWriteThread.java \
 		RelayObject.java \
 		RoutingTable.java \
-		Run.java \
 		ServerSocketStartupThread.java \
 		SocketClientBuffers.java \
 		SocketData.java \
@@ -34,7 +33,6 @@ CLASSES = \
 		SocketWriteThread.java \
 		Startup.java \
 		StreamListenThread.java \
-		Thing.java \
 		WriteToTorFromServerBufferThread.java \
 
 default: classes

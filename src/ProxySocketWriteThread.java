@@ -3,9 +3,6 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.concurrent.BlockingQueue;
 
-/**
- * Created by josephkesting on 6/2/16.
- */
 public class ProxySocketWriteThread extends Thread {
 
     private DataOutputStream socketOut;
@@ -23,8 +20,11 @@ public class ProxySocketWriteThread extends Thread {
     public void run() {
         while(true) {
             try {
+
                 byte[] data = (byte[]) buffer.take();
                 socketOut.write(data);
+                socketOut.flush();
+
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } catch (IOException e) {

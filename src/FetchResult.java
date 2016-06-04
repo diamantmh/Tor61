@@ -1,6 +1,4 @@
-/**
- * Created by josephkesting on 6/2/16.
- */
+
 public class FetchResult {
     private String ip;
     private int port;

@@ -1,8 +1,5 @@
 import java.nio.ByteBuffer;
 
-/**
- * Created by michaeldiamant on 5/31/16.
- */
 public class CircuitObject implements MessageObject {
     private int circuitID;
     private int type;

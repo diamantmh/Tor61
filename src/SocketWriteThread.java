@@ -2,9 +2,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 
-/**
- * Created by josephkesting on 6/1/16.
- */
 public class SocketWriteThread extends Thread {
 
     BlockingQueue buffer;
@@ -17,12 +14,9 @@ public class SocketWriteThread extends Thread {
 
     public void run() {
         while(true) {
-            System.out.println("Socket Write thread");
             try {
                 byte[] message = (byte[]) buffer.take();
-                System.out.println("SocketWriteThread post take");
                 if (message == null || message.length != 512) {
-                    //Do something?
                     break;
                 }
                 out.write(message);

@@ -1,8 +1,5 @@
 import java.util.concurrent.BlockingQueue;
 
-/**
- * Created by josephkesting on 6/2/16.
- */
 public class WriteToTorFromServerBufferThread extends Thread {
 
     private BlockingQueue proxyBuffer;
@@ -19,20 +16,20 @@ public class WriteToTorFromServerBufferThread extends Thread {
     }
 
     public void run() {
-        SocketManager manager = SocketManager.getInstance(0);
         while(true) {
-            byte[] data = new byte[512];
             try {
-                data = (byte[])proxyBuffer.take();
+                byte[] data = (byte[])proxyBuffer.take();
+                if (data.length == 512) {
+                    torBuffer.put(data);
+                } else {
+                    RelayObject dataMessage = new RelayObject(circuitID, streamID, data.length, 2, data);
+                    torBuffer.put(dataMessage.getBytes());
+                }
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            RelayObject dataMessage = new RelayObject(circuitID, streamID, data.length, 2, data);
-            try {
-                torBuffer.put(dataMessage.getBytes());
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+
+
         }
     }
 

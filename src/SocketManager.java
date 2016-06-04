@@ -4,9 +4,6 @@ import java.net.Socket;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-/**
- * Created by josephkesting on 5/31/16.
- */
 public class SocketManager {
     private static SocketManager instance = null;
     private SocketList socketList;
@@ -102,7 +99,6 @@ public class SocketManager {
         Pair outSocketInfo = routingTable.unstage(extendedCircuitID, extendTargetID);
         if (!outSocketInfo.isEntry()) {
             SocketData data = socketList.get(outSocketInfo.getSocket());
-            System.out.println(data);
             RelayObject r = new RelayObject(extendedCircuitID, 0, 0, 7);
             try {
                 data.getBuffer().put(r.getBytes());
@@ -128,8 +124,6 @@ public class SocketManager {
         public ExtendTarget(String body) {
             String[] split = body.split("\0");
             String[] hostPort = split[0].split(":");
-            System.out.println(body);
-            System.out.println(hostPort);
             host = hostPort[0];
             port = Integer.parseInt(hostPort[1]);
             id = Integer.parseInt(split[1]);
@@ -175,7 +169,6 @@ public class SocketManager {
                     socket.close();
                 }
             } catch (IOException e) {
-                // socket.close();
                 e.printStackTrace();
             }
         }

@@ -3,4 +3,4 @@
 make clean
 javac -cp "jython-standalone-2.7.0.jar" FetchResult.java  RegistrationAgent.java 
 make
-java -cp "jython-standalone-2.7.0.jar:." Startup 
+java -cp "jython-standalone-2.7.0.jar:." Startup $1

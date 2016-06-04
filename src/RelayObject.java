@@ -1,8 +1,6 @@
 import java.nio.ByteBuffer;
 
-/**
- * Created by michaeldiamant on 5/31/16.
- */
+
 public class RelayObject implements MessageObject {
     private int circuitID;
     private int streamID;
@@ -32,7 +30,6 @@ public class RelayObject implements MessageObject {
         this.body = body;
         this.data = data;
         if(command == 1) {
-            System.out.println("BEGIN");
             messageType = MessageType.BEGIN;
         } else if(command == 2) {
             messageType = MessageType.DATA;
@@ -112,17 +109,14 @@ public class RelayObject implements MessageObject {
         b.position(11);
         b.putShort((short) bodyLength);
         b.put((byte) command);
-        System.out.println("Command: " + command);
-        if(messageType == MessageType.EXTEND || messageType == MessageType.OPEN) {
-            for(int i = 0; i < body.length(); i++) {
-                b.putChar(body.charAt(i));
+        if(messageType == MessageType.EXTEND || messageType == MessageType.BEGIN) {
+            byte[] bodyBytes = body.getBytes(HTTPProxy.CHARSET);
+            b.put(bodyBytes);
+        } else if(messageType == MessageType.DATA) {
+            if (data != null) {
+                b.put(data);
             }
-        }
-        if (data != null) {
-            b.wrap(data);
         }
         return b.array();
     }
-
-
 }

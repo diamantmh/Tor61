@@ -1,6 +1,4 @@
-/**
- * Created by josephkesting on 5/31/16.
- */
+
 public class Pair {
 
     private int circuit;

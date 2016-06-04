@@ -2,9 +2,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Random;
 
-/**
- * Created by josephkesting on 6/1/16.
- */
 public class Startup {
 
     private static final String REG_HOST = "cse461.cs.washington.edu";
@@ -12,14 +9,14 @@ public class Startup {
     private static final int GROUP_NUM = 1453;
     private static final int INSTANCE_NUM = 1914;
     private static final int LISTEN_PORT = 1993;
-    private static final int PROXY_PORT = 5555;
     private static final String FETCH_PREFIX = "Tor61Router-1453";
     private static SocketManager manager;
     private static Random rand;
 
 
     public static void main(String[] args) {
-        int data = GROUP_NUM * 1000 + INSTANCE_NUM;
+        int proxyPort = Integer.parseInt(args[0]);
+        int data = GROUP_NUM << 4 | INSTANCE_NUM;
         manager = SocketManager.getInstance(data);
         rand = new Random();
         RegistrationAgent agent;
@@ -31,14 +28,10 @@ public class Startup {
             agent.register(LISTEN_PORT, data, groupName);
             List<FetchResult> viableRouters = agent.fetch(FETCH_PREFIX);
             createCircuit(viableRouters);
-            startupProxy();
+            startupProxy(proxyPort);
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-//        List<FetchResult> viableRouters = new ArrayList<>(1);
-//        viableRouters.add(new FetchResult("127.0.0.1", LISTEN_PORT, data));
-        //createCircuit(viableRouters);
     }
 
     private static void createCircuit(List<FetchResult> viableRouters) {
@@ -60,19 +53,18 @@ public class Startup {
         }
     }
 
-    private static void startupProxy() {
-        HTTPProxy p = HTTPProxy.getInstance(PROXY_PORT);
+    private static void startupProxy(int proxyPort) {
+        HTTPProxy p = HTTPProxy.getInstance(proxyPort);
         p.run();
         while(true) {
             try {
-                System.out.println("Startup pretake");
                 String result = manager.getCommandQ().take();
-                System.out.println("Result: " + result);
                 if (result.startsWith("begin")) {
 
                     Pair start = manager.getRoutingTable().getBeginPair();
                     RelayObject beginMessage = createBeginMessage(start, result);
-//                    SocketClientBuffers.getInstance().create(beginMessage.getStreamID());
+                    RelayObject tester = (RelayObject) Decoder.decode(beginMessage.getBytes());
+
                     manager.getSocketList().get(start.getSocket()).getBuffer().put(beginMessage.getBytes());
                     String reply = manager.getCommandQ().take();
                     if(reply.equals("connected")) {

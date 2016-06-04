@@ -2,9 +2,6 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-/**
- * Created by josephkesting on 6/1/16.
- */
 public class ListenThread extends Thread {
 
     private int port;

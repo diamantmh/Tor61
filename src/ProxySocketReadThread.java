@@ -3,9 +3,6 @@ import java.io.InputStream;
 import java.net.Socket;
 import java.util.concurrent.BlockingQueue;
 
-/**
- * Created by josephkesting on 6/2/16.
- */
 public class ProxySocketReadThread extends Thread {
 
     private InputStream socketIn;
@@ -22,15 +19,18 @@ public class ProxySocketReadThread extends Thread {
     }
 
     public void run() {
-        while (true) {
+        int read = 1;
+        while (read > 0) {
             byte[] data = new byte[498];
             try {
-                socketIn.read(data);
+                read = socketIn.read(data);
                 buffer.put(data);
             } catch (IOException e) {
                 e.printStackTrace();
+                break;
             } catch (InterruptedException e) {
                 e.printStackTrace();
+                break;
             }
 
         }

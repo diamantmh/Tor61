@@ -2,9 +2,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
-/**
- * Created by josephkesting on 6/2/16.
- */
 public class ServerSocketStartupThread extends Thread {
 
     private Socket s;
@@ -15,6 +12,7 @@ public class ServerSocketStartupThread extends Thread {
         this.s = new Socket();
         try {
             s.bind(new InetSocketAddress(0));
+            host = host.trim();
             s.connect(new InetSocketAddress(host, port));
             if (!s.isConnected()) {
                 throw new IOException();

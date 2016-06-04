@@ -6,9 +6,6 @@ import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-/**
- * Created by josephkesting on 5/31/16.
- */
 public class SocketClientBuffers {
     private static SocketClientBuffers instance = null;
     private static Map<Integer, BufferPair> buffers = null;
@@ -25,17 +22,19 @@ public class SocketClientBuffers {
         return instance;
     }
 
-    public BufferPair create(int ID) {
+    public synchronized BufferPair create(int ID) {
+        System.out.println("Created: " + ID);
         BufferPair bp = new BufferPair();
         buffers.put(ID, bp);
         return bp;
     }
 
-    public BufferPair get(int id) {
+    public synchronized BufferPair get(int id) {
         return buffers.get(id);
     }
 
-    public void close(int id) {
-        buffers.remove(id);
+    public synchronized void close(int id) {
+        System.out.println("Destroyed: " + id);
+//        buffers.remove(id);
     }
 }

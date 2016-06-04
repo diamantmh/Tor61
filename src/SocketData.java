@@ -5,9 +5,6 @@ import java.net.Socket;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-/**
- * Created by josephkesting on 5/31/16.
- */
 public class SocketData {
 
     private boolean owned;

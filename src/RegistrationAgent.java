@@ -5,37 +5,15 @@ import java.io.*;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
-/**
- * Created by josephkesting on 5/31/16.
- */
+
 public class RegistrationAgent {
 
-    public static void main(String[] args) {
-        try {
-            RegistrationAgent reg = new RegistrationAgent("cse461.cs.washington.edu", 46101);
-            System.out.println(reg.probe());
-            reg.register(1234, 14000, "hermanos");
-//            System.out.println(reg.fetch("")[0].getData());
-//            reg.quit();
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("HERE");
-        }
-    }
-
-    Process process;
     BufferedWriter out;
-    BufferedReader in;
     PythonInterpreter interpreter;
     PyObject agent;
 
     public RegistrationAgent(String host, int port) throws IOException {
         host = "\"" + host + "\"";
-//        ProcessBuilder processBuilder = new ProcessBuilder("python", "client.py", host, "" + port);
-//        processBuilder.redirectErrorStream(true);
-//        process = processBuilder.start();
-//        out = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
-//        in = new BufferedReader(new InputStreamReader(process.getInputStream()));
         interpreter = new PythonInterpreter();
         interpreter.execfile("agent.py");
         agent = interpreter.eval("RegistrationAgent("+host+", "+port+")");

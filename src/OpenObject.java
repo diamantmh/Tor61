@@ -1,8 +1,6 @@
 import java.nio.ByteBuffer;
 
-/**
- * Created by michaeldiamant on 5/31/16.
- */
+
 public class OpenObject implements MessageObject {
     private int openerID;
     private int openedID;

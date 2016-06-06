@@ -54,7 +54,8 @@ public class SocketManager {
             e.printStackTrace();
         }
         SocketData data = socketList.get(agentID);
-        Thread write = new SocketWriteThread(data.getBuffer(), data.getOut());
+        //Thread write = new SocketWriteThread(data.getBuffer(), data.getOut());
+        ProxySocketWriteThread write = new ProxySocketWriteThread(s, data.getBuffer());
         Thread read = new SocketReadThread(data);
         write.start();
         read.start();
@@ -160,7 +161,8 @@ public class SocketManager {
                 OpenObject opened = (OpenObject)Decoder.decode(response);
                 if (opened.getMessageType() == MessageType.OPENED) {
                     socketList.addSocket(data, data.getPort());
-                    Thread write = new SocketWriteThread(data.getBuffer(), data.getOut());
+                    //Thread write = new SocketWriteThread(data.getBuffer(), data.getOut());
+                    ProxySocketWriteThread write = new ProxySocketWriteThread(socket, data.getBuffer());
                     Thread read = new SocketReadThread(data);
                     write.start();
                     read.start();

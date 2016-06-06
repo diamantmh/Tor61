@@ -52,10 +52,9 @@ public class Startup {
             }
         }
     }
-
+    
     private static void startupProxy(int proxyPort) {
         HTTPProxy p = HTTPProxy.getInstance(proxyPort);
-
         p.run();
         while(true) {
             try {
